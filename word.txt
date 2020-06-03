@@ -1,7 +1,6 @@
 abeja
 mosca
 piton
-araña
 erizo
 burro
 piojo
@@ -17,5 +16,5 @@ camello
 ballena
 bisonte
 hormiga
-caracol 
-gaviota 
+caracol
+gaviota
