@@ -1,0 +1,6 @@
+test1;-9
+Paco;-35
+Paco;24
+Pepe;56
+Juan;33
+Victor;12

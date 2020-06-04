@@ -5,6 +5,7 @@ function createGame($rows,$cols,$numWords)
 {
     $arrayGame = createArrayFilledRandomly($rows,$cols);
     $randomWords = getRandomWordsFromFile($numWords);    
+    $_SESSION["maxLetters"] = countLettersIn($randomWords);
 
     //Add words to the game board
     for ($indexWord = 0; $indexWord < count($randomWords); $indexWord++) {
@@ -57,6 +58,15 @@ function getRandomWordsFromFile($number)
     return $randomWords;
 }
 
+function countLettersIn($arrayWords)
+{
+    $letters = 0;
+    foreach ($arrayWords as  $word) {
+        $letters += strlen($word);
+    }
+    return $letters;
+}
+
 function removeButton($htmlString)
 {
     // $htmlString = <td class='correcto'><button>A</button></td>
@@ -73,10 +83,28 @@ function markAsCorrect($cell)
 
     //Add css class to see that is correct
     $aux = preg_replace('/class/',"class='correct'",$_SESSION["game"][$i][$j]);
-
     //Remove the button
     $aux = removeButton($aux);
     $_SESSION["game"][$i][$j] = $aux;
+}
+
+function checkWin()     
+{
+    if($_SESSION["hits"] == $_SESSION["maxLetters"]){
+        saveInRanking();
+        echo "<h1>Felicidades ganaste " . $_SESSION['player']."</h1>";
+        echo '<form action="./index.php" method="get"><button type="submit">New Game</button></form>';
+        die();
+    }
+}
+
+function saveInRanking()
+{
+    $file = fopen("ranking.txt", "a");
+    $points = ($_SESSION["hits"]*5) -$_SESSION["tries"];
+    $record = $_SESSION['player'] . ";" . $points . "\n";
+    fwrite($file, $record);                                 //save name and points in the ranking 
+    fclose($file);
 }
 
 function render($array)
@@ -101,11 +129,17 @@ if (!isset($_SESSION["game"]) or is_null($_SESSION["game"])){   //When no game s
     $_SESSION["rows"] =  $_GET["rows"];
     $_SESSION["cols"] =  $_GET["cols"];
     $_SESSION["words"] =  $_GET["words"];
+    $_SESSION["tries"] =  0;
+    $_SESSION["hits"] =  0;
     $_SESSION["game"] = createGame($_SESSION["rows"],$_SESSION["cols"],$_SESSION["words"] );
 
 }else if (isset($_GET["cell"])) {   //When player clicks on a letter
-    if (!empty($_GET["cell"])) {
+    if (empty($_GET["cell"])) {
+        $_SESSION["tries"]++;
+    }else{
+        $_SESSION["hits"]++;
         markAsCorrect($_GET["cell"]);
+        checkWin();
     }
 }
 $arrayGame = $_SESSION["game"];
@@ -135,6 +169,8 @@ $arrayGame = $_SESSION["game"];
     </style>
 </head>
     <body>
+        <div class="tries">Tries <?php echo $_SESSION["tries"]; ?></div>
+        <div class="hits">Hits <?php echo $_SESSION["hits"]; ?></div>
         <form action="./game.php" method="get">
             <table><?php render($arrayGame) ?></table>
         </form>
